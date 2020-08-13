@@ -249,7 +249,6 @@ def main(options, targets):
 
 
     for target in targets:
-        client_headers.update({'Origin': 'null'})
         if port is not None:
             target = append_port(target, port)
         
@@ -310,29 +309,6 @@ header {} is present! (Value: {})".format(
             if not i_chk:
                 print("[*] No information disclosure headers detected")
         
-        ## ADDED
-        json_headers["value_disclosure"] = {}
-        v_chk = False
-        print()
-        for valueh in value_headers:
-            if valueh in headers:
-                json_headers["value_disclosure"][valueh] = headers.get(valueh)
-                if valueh == 'Access-Control-Allow-Origin':
-                    if json_headers["value_disclosure"][valueh] == "null":
-                        print("Allow-Control-Access-Control null value reflected in response!".format(colorize(valueh, 'warning')))
-
-                if valueh == 'Access-Control-Allow-Credentials':
-                    if json_headers["value_disclosure"][valueh] == "true":
-                        print("Allow-Control-Access-Credentials is set to true!".format(colorize(valueh, 'warning')))
-                
-                if valueh == 'Content-type' and 'charset=' in (json_headers["value_disclosure"][valueh]):
-                    if json_headers["value_disclosure"][valueh] not in {"text/html; charset=utf-8", "text/html; charset=iso-8859-1"}:
-                        print("Unknown charset in Content-type!".format(colorize(valueh, 'warning')))
-                
-                v_chk = True
-        if not v_chk:
-            print("[*] No  value headers detected")
-
 
         if cache_control:
             json_headers["caching"] = {}
@@ -354,6 +330,49 @@ Value: {})".format(
             sys.stdout = sys.__stdout__
             json_output = json.loads(str(json_headers).replace("\'", "\""))
             print(json.dumps(json_output))
+
+        ## ADDED
+        
+        print("Checking CORS headers and uncommon charsets with the web server...")
+        json_headers["value_disclosure"] = {}
+        v_chk = False
+        print()
+        for valueh in value_headers:
+            if valueh in headers:
+                json_headers["value_disclosure"][valueh] = headers.get(valueh)
+                if valueh == 'Access-Control-Allow-Credentials':
+                    if json_headers["value_disclosure"][valueh] == "true":
+                        print("Allow-Control-Access-Credentials is set to true!".format(colorize(valueh, 'warning')))
+                
+                if valueh == 'Content-type' and 'charset=' in (json_headers["value_disclosure"][valueh]):
+                    if json_headers["value_disclosure"][valueh] not in {"text/html; charset=utf-8", "text/html; charset=iso-8859-1"}:
+                        print("Unknown charset in Content-type!".format(colorize(valueh, 'warning')))
+                
+                v_chk = True
+        
+        client_headers.update({'Origin': 'evil.com'})
+        response = check_target(target, options)
+        rUrl = response.geturl()
+        parse_headers(response.getheaders())
+        if 'Access-Control-Allow-Origin' in headers:
+            if headers.get('Access-Control-Allow-Origin') == "evil.com":
+                print("Allow-Control-Access-Control value reflected in response!".format(colorize(valueh, 'warning')))
+            elif headers.get('Access-Control-Allow-Origin') == "*":
+                print("Allow-Control-Access-Control too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
+        client_headers.update({'Origin': 'null'})
+        response = check_target(target, options)
+        rUrl = response.geturl()
+        parse_headers(response.getheaders())
+        if 'Access-Control-Allow-Origin' in headers:
+            if headers.get('Access-Control-Allow-Origin') == "null":
+                print("Allow-Control-Access-Control null value in response!".format(colorize(valueh, 'warning')))
+            elif headers.get('Access-Control-Allow-Origin') == "*":
+                print("Allow-Control-Access-Control too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
+
+        if not v_chk:
+            print("[*] No  value headers detected")
+        ## ENDED
+
 
 if __name__ == "__main__":
 
