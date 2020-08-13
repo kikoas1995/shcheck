@@ -54,11 +54,17 @@ sec_headers = {
     'X-Frame-Options': 'warning',
     'X-Content-Type-Options': 'warning',
     'Strict-Transport-Security': 'error',
-    'Public-Key-Pins': 'none',
     'Content-Security-Policy': 'warning',
     'X-Permitted-Cross-Domain-Policies': 'warning',
-    'Referrer-Policy': 'warning'
+    'Referrer-Policy': 'warning',
+    'Feature-Policy': 'warning',
+    'Expect-CT': 'info',
+}
 
+value_headers =  {
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Credentials',
+    'Content-Type'
 }
 
 information_headers = {
@@ -150,7 +156,6 @@ def print_error(e):
             else:
                 print("Target host seems to be unreachable ({})".format(e.reason))
 
-
 def check_target(target, options):
     '''
     Just put a protocol to a valid IP and check if connection works,
@@ -220,7 +225,6 @@ def main(options, targets):
     if json_output:
         global json_headers
         sys.stdout = open(os.devnull, 'w')
-
     banner()
     # Set a custom port if provided
     if cookie is not None:
@@ -245,6 +249,7 @@ def main(options, targets):
 
 
     for target in targets:
+        client_headers.update({'Origin': 'null'})
         if port is not None:
             target = append_port(target, port)
         
@@ -304,6 +309,30 @@ header {} is present! (Value: {})".format(
                             headers.get(infoh)))
             if not i_chk:
                 print("[*] No information disclosure headers detected")
+        
+        ## ADDED
+        json_headers["value_disclosure"] = {}
+        v_chk = False
+        print()
+        for valueh in value_headers:
+            if valueh in headers:
+                json_headers["value_disclosure"][valueh] = headers.get(valueh)
+                if valueh == 'Access-Control-Allow-Origin':
+                    if json_headers["value_disclosure"][valueh] == "null":
+                        print("Allow-Control-Access-Control null value reflected in response!".format(colorize(valueh, 'warning')))
+
+                if valueh == 'Access-Control-Allow-Credentials':
+                    if json_headers["value_disclosure"][valueh] == "true":
+                        print("Allow-Control-Access-Credentials is set to true!".format(colorize(valueh, 'warning')))
+                
+                if valueh == 'Content-type' and 'charset=' in (json_headers["value_disclosure"][valueh]):
+                    if json_headers["value_disclosure"][valueh] not in {"text/html; charset=utf-8", "text/html; charset=iso-8859-1"}:
+                        print("Unknown charset in Content-type!".format(colorize(valueh, 'warning')))
+                
+                v_chk = True
+        if not v_chk:
+            print("[*] No  value headers detected")
+
 
         if cache_control:
             json_headers["caching"] = {}
