@@ -24,6 +24,8 @@ import ssl
 import os
 import json
 from optparse import OptionParser
+from defectdojo_api import defectdojo
+import datetime
 
 
 class bcolors:
@@ -101,6 +103,207 @@ def colorize(string, alert):
         'info':     bcolors.OKBLUE + string + bcolors.ENDC
     }
     return color[alert] if alert in color else string
+
+def dojoUpdate(safeh, dp, value):
+    products = dd.list_products(name_contains=dp)
+    product_id = None
+
+    finding = {}
+
+    if 'X-Frame-Options' in safeh:
+            finding['title'] = 'ASVS v4.0 - 14.4.7 - Include anti clickjacking headers'
+            finding['description'] = """
+            Clickjacking, also known as a "UI redress attack", is when an attacker uses multiple transparent or opaque layers to trick a user into clicking on a button or link on another page when they were intending to click on the top level page. Thus, the attacker is "hijacking" clicks meant for their page and routing them to another page, most likely owned by another application, domain, or both.
+Using a similar technique, keystrokes can also be hijacked. With a carefully crafted combination of stylesheets, iframes, and text boxes, a user can be led to believe they are typing in the password to their email or bank account, but are instead typing into an invisible frame controlled by the attacker.
+            """
+            finding['active'] = True
+            finding['verified'] = True
+            finding['severity'] = "Low"
+            finding['impact'] = "TEST"
+            finding['mitigation'] = "TEST"
+            finding['references'] = ""
+            finding['cwe'] = 346
+            finding['severity_justification'] = ""
+    elif "Referrer-Policy" in safeh:
+            finding['title'] = 'ASVS v4.0 - 14.4.6 - Referrer policy header'
+            finding['description'] = """
+            Requests made from a document, and for navigations away from that document are associated with a Referer header. While the header can be suppressed for links with the noreferrer link type, authors might wish to control the Referer header more directly for a number of reasons, Privacy A social networking site has a profile page for each of its users, and users add hyperlinks from their profile page to their favorite bands.
+The social networking site might not wish to leak the user’s profile URL to the band web sites when other users follow those hyperlinks (because the profile URLs might reveal the identity of the owner of the profile).
+Some social networking sites, however, might wish to inform the band web sites that the links originated from the social networking site but not reveal which specific user’s profile contained the links.
+Security A web application uses HTTPS and a URLbased session identifier. The web application might wish to link to HTTPS resources on other web sites without leaking the user’s session identifier in the URL.
+Alternatively, a web application may use URLs which themselves grant some capability.
+Controlling the referrer can help prevent these capability URLs from leaking via referrer headers.
+Note that there are other ways for capability URLs to leak, and controlling the referrer is not enough to control all those potential leaks.
+Trackback A blog hosted over HTTPS might wish to link to a blog hosted over HTTP and receive trackback links.
+            """           
+            finding['active'] = True
+            finding['verified'] = True
+            finding['severity'] = "Medium"
+            finding['impact'] = ""
+            finding['mitigation'] = "Null"
+            finding['references'] = ""
+            finding['cwe'] = 116
+            finding['severity_justification'] = ""
+    elif "charset" in safeh:
+            finding['title'] = 'ASVS v4.0 - 14.4.1 - Content type headers'
+            finding['description'] = """
+            Setting the right content headers is important for hardening your applications security, this reduces exposure to driveby download attacks or sites serving user uploaded content that, by clever naming could be treated by MS Internet Explorer as executable or dynamic HTML files and thus can lead to security vulnerabilities.
+
+Test to check
+Verify that every HTTP response contains a content type header specifying a safe character set (e.g., UTF-8, ISO 8859-1)
+            """
+            finding['active'] = True
+            finding['verified'] = True
+            finding['severity'] = "Low"
+            finding['impact'] = ""
+            finding['mitigation'] = "Null"
+            finding['references'] = ""
+            finding['cwe'] = 116
+            finding['severity_justification'] = ""
+    elif "Strict-Transport" in safeh:
+            finding['title'] = 'ASVS v4.0 - 14.4.5 - HTTP Strict Transport Security (HSTS)'
+            finding['description'] = """
+            HTTP Strict Transport Security (HSTS) is an opt-in security enhancement that is specified by a web application through the use of a special response header. Once a supported browser receives this header that browser will prevent any communications from being sent over HTTP to the specified domain and will instead send all communications over HTTPS. It also prevents HTTPS click through prompts on browsers.
+HSTS addresses the following threats:
+
+User bookmarks or manually types http://example.com and is subject to a man-in-the-middle attacker. HSTS automatically redirects HTTP requests to HTTPS for the target domain.
+Web application that is intended to be purely HTTPS inadvertently contains HTTP links or serves content over HTTP. HSTS automatically redirects HTTP requests to HTTPS for the target domain.
+A man-in-the-middle attacker attempts to intercept traffic from a victim user using an invalid certificate and hopes the user will accept the bad certificate. HSTS does not allow a user to override the invalid certificate message
+"""
+            finding['active'] = True
+            finding['verified'] = True
+            finding['severity'] = "Medium"
+            finding['impact'] = ""
+            finding['mitigation'] = "Null"
+            finding['references'] = ""
+            finding['cwe'] = 116
+            finding['severity_justification'] = ""
+    elif "X-Content-Type" in safeh:
+            finding['title'] = 'ASVS v4.0 - 14.4.4 - API responses security headers'
+            finding['description'] = """
+            There are some security headers which should be properly configured in order to protect some API callbacks against Reflective File Download and other type of injections.
+Also check if the API response is dynamic, if user input is reflected in the response. If so, you must validate and encode the input, in order to prevent XSS and Same origin method execution attacks.
+            """
+            finding['active'] = True
+            finding['verified'] = True
+            finding['severity'] = "Low"
+            finding['impact'] = ""
+            finding['mitigation'] = "Null"
+            finding['references'] = ""
+            finding['cwe'] = 116
+            finding['severity_justification'] = ""
+    elif "Content-Security-Policy" in safeh:
+            finding['title'] = 'ASVS v4.0 - 14.4.3 - Content security policy headers'
+            finding['description'] = """
+            The main use of the content security policy header is to, detect, report, and reject XSS attacks. The core issue in relation to XSS attacks is the browser's inability to distinguish between a script that's intended to be part of your application, and a script that's been maliciously injected by a thirdparty.
+            With the use of CSP(Content Security policy), we can tell the browser which script is safe to execute and which scripts are most likely been injected by an attacker.
+            """
+            finding['active'] = True
+            finding['verified'] = True
+            finding['severity'] = "Medium"
+            finding['impact'] = ""
+            finding['mitigation'] = "Null"
+            finding['references'] = ""
+            finding['cwe'] = 116
+            finding['severity_justification'] = ""
+
+    if products.count() > 0:
+        for product in products.data["objects"]:
+            product_id = product['id']
+
+    product = dd.get_product(product_id)
+
+    engagement = dd.list_engagements(product_in=[product_id], name_contains="ASVS")
+    engagement_id = None
+
+    if engagement.count() > 0:
+        for engagement in engagement.data["objects"]:
+            engagement_id = engagement['id']    
+    if engagement_id is None:
+        date_start = datetime.datetime.now().date().strftime('%Y-%m-%d')
+        date_end = (datetime.datetime.now().date() + datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
+        engagement_id = dd.create_engagement("ASVS", product_id=product_id, lead_id=1,
+                                                     status='In Progress', target_start=date_start,
+                                                     target_end=date_end)
+
+    tests = dd.list_tests(engagement_in=engagement_id, name="ASVS").data['objects']
+    test_id = None
+
+    for test in tests:
+        test_id = test['id']
+
+    safeh = ""
+
+    # Check if findings with the same title are already created.
+    try:
+        existing_findings = dd.list_findings(
+            product_id_in=product_id,
+            test_id_in=test_id,
+            title_contains=finding['title'],
+            limit=500000
+        ).data['objects']
+    except Exception as e:
+        print('Error getting findings: ' + str(e))
+    else:
+        # Create new finding if it not exists in current test.
+        if not existing_findings:
+            print("Creating finding '" + finding['title'] + "'...")
+            try:
+                dd.create_finding(
+                    title=finding['title'],
+                    description=finding['description'],
+                    cwe=finding['cwe'],
+                    date=datetime.datetime.now().date().strftime('%Y-%m-%d'),
+                    product_id=product_id,
+                    engagement_id=engagement_id,
+                    test_id=test_id,
+                    user_id=1,
+                    severity=finding['severity'],
+                    impact=finding['impact'],
+                    mitigation=finding['mitigation'],
+                    active=finding['active'],
+                    verified=finding['verified'],
+                    references=finding['references'],
+                    build=None,
+                    line=0,
+                    file_path=None,
+                    static_finding=False,
+                    dynamic_finding=False,
+                    false_p=False,
+                    duplicate=False,
+                    out_of_scope=False,
+                    under_review=False,
+                    under_defect_review=False,
+                    numerical_severity=None,
+                    severity_justification=finding['severity_justification']
+                )
+            except Exception as e:
+                print('Error creating finding ' + finding['title'] + ' - ' + str(e))
+
+        # Update finding if it already exists.
+        else:
+            for existing_finding in existing_findings:
+                print("Updating finding '" + finding['title'] + "'...")
+                try:
+                    dd.set_finding(
+                        finding_id=existing_finding['id'],
+                        description=finding['description'],
+                        product_id=product_id,
+                        engagement_id=engagement_id,
+                        test_id=test_id,
+                        active=finding['active'],
+                        verified=finding['verified'],
+                        severity=finding['severity'],
+                        impact=finding['impact'],
+                        mitigation=finding['mitigation'],
+                        references=finding['references'],
+                        cwe=finding['cwe'],
+                        severity_justification=finding['severity_justification']
+                    )
+                except Exception as e:
+                    print('Error updating finding ' + finding['title'] + ' - ' + str(e))
+
+
 
 
 def parse_headers(hdrs):
@@ -210,8 +413,18 @@ def report(target, safe, unsafe):
         colorize(str(unsafe), 'error')))
     print()
 
+def dojoLogin():
+    with open("api.txt", "r") as fp:
+        global dd
+        user = fp.readline().strip()
+        api_key = fp.readline().strip()        
+        dd = defectdojo.DefectDojoAPI("DOJO_URL", api_key, user, debug=False, verify_ssl=False)
+
 def main(options, targets):
-    
+
+    #DojoLogin
+    dojoLogin()
+
     # Getting options
     port = options.port
     cookie = options.cookie
@@ -220,6 +433,8 @@ def main(options, targets):
     cache_control = options.cache_control
     hfile = options.hfile
     json_output = options.json_output
+    global dp
+    dp = options.dp
     
     # Disabling printing if json output is requested
     if json_output:
@@ -291,8 +506,10 @@ def main(options, targets):
                     unsafe -= 1
                     json_headers["missing"].remove(safeh)
                     continue
+
                 print('[!] Missing security header: {}'.format(
                     colorize(safeh, sec_headers.get(safeh))))
+                dojoUpdate(safeh, dp, "")
 
         if information:
             json_headers["information_disclosure"] = {}
@@ -347,7 +564,8 @@ Value: {})".format(
                 if valueh == 'Content-type' and 'charset=' in (json_headers["value_disclosure"][valueh]):
                     if json_headers["value_disclosure"][valueh] not in {"text/html; charset=utf-8", "text/html; charset=iso-8859-1"}:
                         print("Unknown charset in Content-type!".format(colorize(valueh, 'warning')))
-                
+                        dojoUpdate(valueh, dp, json_headers["value_disclosure"][valueh])
+
                 v_chk = True
         
         client_headers.update({'Origin': 'evil.com'})
@@ -357,8 +575,10 @@ Value: {})".format(
         if 'Access-Control-Allow-Origin' in headers:
             if headers.get('Access-Control-Allow-Origin') == "evil.com":
                 print("Allow-Control-Access-Control value reflected in response!".format(colorize(valueh, 'warning')))
+                dojoUpdate(valueh, dp, "evil.com")
             elif headers.get('Access-Control-Allow-Origin') == "*":
                 print("Allow-Control-Access-Control too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
+                dojoUpdate(valueh, dp, "*")
         client_headers.update({'Origin': 'null'})
         response = check_target(target, options)
         rUrl = response.geturl()
@@ -366,9 +586,10 @@ Value: {})".format(
         if 'Access-Control-Allow-Origin' in headers:
             if headers.get('Access-Control-Allow-Origin') == "null":
                 print("Allow-Control-Access-Control null value in response!".format(colorize(valueh, 'warning')))
+                dojoUpdate(valueh, dp, "null")
             elif headers.get('Access-Control-Allow-Origin') == "*":
                 print("Allow-Control-Access-Control too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
-
+                dojoUpdate(valueh, dp, "*")
         if not v_chk:
             print("[*] No  value headers detected")
         ## ENDED
@@ -410,9 +631,12 @@ if __name__ == "__main__":
     parser.add_option("--hfile", dest="hfile",
                       help="Load a list of hosts from a flat file",
                       metavar="PATH_TO_FILE")
+    parser.add_option("--dp", dest="dp",
+                      help="Specify a DP ID to be updated.",
+                      metavar="DP_ID")
     (options, args) = parser.parse_args()
 
-    if len(args) < 1 and options.hfile is None :
-        parser.print_help()
-        sys.exit(1)
+    #if len(args) < 1 and options.hfile is None :
+    #    parser.print_help()
+    #    sys.exit(1)
     main(options, args)
