@@ -213,16 +213,17 @@ Also check if the API response is dynamic, if user input is reflected in the res
 
     product = dd.get_product(product_id)
 
-    engagement = dd.list_engagements(product_in=[product_id], name_contains="ASVS")
+    engagements = dd.list_engagements(product_in=[product_id], name_contains="Pentest").data['objects']
     engagement_id = None
 
-    if engagement.count() > 0:
-        for engagement in engagement.data["objects"]:
-            engagement_id = engagement['id']    
+    for engagement in engagements:
+        if "Pentest" in engagement['name']:
+            engagement_id = engagement['id']
+  
     if engagement_id is None:
         date_start = datetime.datetime.now().date().strftime('%Y-%m-%d')
         date_end = (datetime.datetime.now().date() + datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
-        engagement_id = dd.create_engagement("ASVS", product_id=product_id, lead_id=1,
+        engagement_id = dd.create_engagement("Pentest", product_id=product_id, lead_id=1,
                                                      status='In Progress', target_start=date_start,
                                                      target_end=date_end)
 
@@ -230,8 +231,23 @@ Also check if the API response is dynamic, if user input is reflected in the res
     test_id = None
 
     for test in tests:
-        test_id = test['id']
+        if "ASVS" in test['test_type']: 
+            test_id = test['id']
 
+    # Create test if it not exists
+    if test_id is None:
+        environment = 3 #prod
+        test_types = dd.list_test_types('ASVS').data['objects']
+        if test_types:
+            # Get the first one that matches. TODO: search if findings are inside
+            test_type_key_id = test_types[0]['id']
+        else:
+            # Create new test_type
+            test_type_key_id = dd.create_test_type('ASVS').data
+        date_start = datetime.datetime.now().date().strftime('%Y-%m-%d')
+        date_end = (datetime.datetime.now().date() + datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
+        test_id = dd.create_test(engagement_id, test_type_key_id, environment, target_start=date_start,
+                                         target_end=date_end, percent_complete=None)
     safeh = ""
 
     # Check if findings with the same title are already created.
@@ -418,7 +434,7 @@ def dojoLogin():
         global dd
         user = fp.readline().strip()
         api_key = fp.readline().strip()        
-        dd = defectdojo.DefectDojoAPI("DOJO_URL", api_key, user, debug=False, verify_ssl=False)
+        dd = defectdojo.DefectDojoAPI("https://dojo-ppd.axa-assistance.intraxa/", api_key, user, debug=False, verify_ssl=False)
 
 def main(options, targets):
 
