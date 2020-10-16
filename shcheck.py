@@ -27,6 +27,7 @@ from optparse import OptionParser
 from defectdojo_api.defectdojo_api import defectdojo
 import datetime
 
+DOJO_URL = "CHANGEME"
 
 class bcolors:
     HEADER = '\033[95m'
@@ -659,7 +660,7 @@ def dojoLogin():
             global dd
             user = fp.readline().strip()
             api_key = fp.readline().strip()        
-            dd = defectdojo.DefectDojoAPI("https://dojo-ppd.axa-assistance.intraxa/", api_key, user, debug=False, verify_ssl=False)
+            dd = defectdojo.DefectDojoAPI(DOJO_URL, api_key, user, debug=False, verify_ssl=False)
     except Exception as e:
         print("[x] Error opening {}".format(colorize('api.txt', 'info')))
         print("Format expected of the 'api.txt' file is:")
