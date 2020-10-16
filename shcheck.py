@@ -27,7 +27,6 @@ from optparse import OptionParser
 from defectdojo_api.defectdojo_api import defectdojo
 import datetime
 
-DOJO_URL = "CHANGEME"
 
 class bcolors:
     HEADER = '\033[95m'
@@ -167,7 +166,11 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N
             """
-    elif "X-Permitted-Cross-Domain-Policies" or "Feature-Policy" or "Expect-CT" in safeh:
+    elif "X-Permitted-Cross-Domain-Policies" in safeh:
+        return
+    elif "Feature-Policy" in safeh:
+        return
+    elif "Expect-CT" in safeh:
         return
     elif "Referrer-Policy" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.6 - Referrer-policy header'
@@ -430,8 +433,6 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
             """
-    elif 'X-Permitted-Cross-Domain-Policies' or 'Feature-Policy' or 'Expect-CT':
-        pass
     if products.count() > 0:
         for product in products.data["objects"]:
             product_id = product['id']
@@ -660,14 +661,14 @@ def dojoLogin():
             global dd
             user = fp.readline().strip()
             api_key = fp.readline().strip()        
-            dd = defectdojo.DefectDojoAPI(DOJO_URL, api_key, user, debug=False, verify_ssl=False)
+            dd = defectdojo.DefectDojoAPI("https://dojo-ppd.axa-assistance.intraxa/", api_key, user, debug=False, verify_ssl=False)
     except Exception as e:
         print("[x] Error opening {}".format(colorize('api.txt', 'info')))
         print("Format expected of the 'api.txt' file is:")
         print("<Dojo username>")
         print("<API key>")
         return 'Error'
-        
+
 def main(options, targets):
 
     #DojoLogin
@@ -843,11 +844,11 @@ Value: {})".format(
         print(bcolors.OKBLUE + "Checking if the Access-Control-Allow-Origin response header is included and well configured..." + bcolors.ENDC)
         if 'Access-Control-Allow-Origin' in headers:
             if headers.get('Access-Control-Allow-Origin') == "evil.com":
-                print("Access-Control-Allow-Origin' value reflected in response!".format(colorize(valueh, 'warning')))
+                print("Access-Control-Allow-Origin value reflected in response!".format(colorize(valueh, 'warning')))
                 dojoUpdate('Access-Control-Allow-Origin', dp, "evil.com", isAPI)
             elif headers.get('Access-Control-Allow-Origin') == "*":
-                print("Access-Control-Allow-Origin' too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
-                dojoUpdate(bcolors.OKGREEN + 'Access-Control-Allow-Origin', dp, "*", isAPI)
+                print("Access-Control-Allow-Origin too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
+                dojoUpdate('Access-Control-Allow-Origin', dp, "*", isAPI)
             else:
                 print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is used properly... 1st Check OK!' + bcolors.ENDC)
         client_headers.update({'Origin': 'null'})
@@ -856,10 +857,10 @@ Value: {})".format(
         parse_headers(response.getheaders())
         if 'Access-Control-Allow-Origin' in headers:
             if headers.get('Access-Control-Allow-Origin') == "null":
-                print("Access-Control-Allow-Origin' null value in response!".format(colorize(valueh, 'warning')))
+                print("Access-Control-Allow-Origin null value in response!".format(colorize(valueh, 'warning')))
                 dojoUpdate('Access-Control-Allow-Origin', dp, "null", isAPI)
             elif headers.get('Access-Control-Allow-Origin') == "*":
-                print("Access-Control-Allow-Origin' too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
+                print("Access-Control-Allow-Origin too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
                 dojoUpdate('Access-Control-Allow-Origin', dp, "*", isAPI)
             else:
                 print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is used properly... 2nd Check OK!' + bcolors.ENDC)
