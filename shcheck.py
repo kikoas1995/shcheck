@@ -166,6 +166,8 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N
             """
+    elif "X-Permitted-Cross-Domain-Policies" or "Feature-Policy" or "Expect-CT" in safeh:
+        return
     elif "Referrer-Policy" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.6 - Referrer-policy header'
             finding['description'] = """
@@ -427,6 +429,8 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
             """
+    elif 'X-Permitted-Cross-Domain-Policies' or 'Feature-Policy' or 'Expect-CT':
+        pass
     if products.count() > 0:
         for product in products.data["objects"]:
             product_id = product['id']
@@ -657,15 +661,17 @@ def dojoLogin():
             api_key = fp.readline().strip()        
             dd = defectdojo.DefectDojoAPI("https://dojo-ppd.axa-assistance.intraxa/", api_key, user, debug=False, verify_ssl=False)
     except Exception as e:
-        print("[x] Error opening {}".format(colorize("api.txt", 'info')))
+        print("[x] Error opening {}".format(colorize('api.txt', 'info')))
         print("Format expected of the 'api.txt' file is:")
         print("<Dojo username>")
         print("<API key>")
-
+        return 'Error'
+        
 def main(options, targets):
 
     #DojoLogin
-    dojoLogin()
+    if dojoLogin() == 'Error':
+        return
 
     # Getting options
     port = options.port
@@ -756,6 +762,7 @@ def main(options, targets):
 
                 print('[!] Missing security header: {}'.format(
                     colorize(safeh, sec_headers_2.get(safeh))))
+
                 dojoUpdate(safeh, dp, "", isAPI)
 
         if information:
@@ -808,8 +815,8 @@ Value: {})".format(
                 if valueh == 'Access-Control-Allow-Credentials':
                     print(bcolors.OKBLUE + "Access-Control-Allow-Credentials response header is included. Checking the value..." + bcolors.ENDC)
                     if json_headers["value_disclosure"][valueh] == "true":
-                        print("Allow-Control-Access-Credentials is set to true!".format(colorize(valueh, 'warning')))
-                        dojoUpdate('Allow-Control-Access-Credentials', dp, "true", isAPI)
+                        print("Access-Control-Allow-Credentials is set to true!".format(colorize(valueh, 'warning')))
+                        dojoUpdate('Access-Control-Allow-Credentials', dp, "true", isAPI)
                     else:
                         print(bcolors.OKGREEN + 'Access-Control-Allow-Credentials response header is used properly... OK!'+ bcolors.ENDC)
                 else:
@@ -835,10 +842,10 @@ Value: {})".format(
         print(bcolors.OKBLUE + "Checking if the Access-Control-Allow-Origin response header is included and well configured..." + bcolors.ENDC)
         if 'Access-Control-Allow-Origin' in headers:
             if headers.get('Access-Control-Allow-Origin') == "evil.com":
-                print("Allow-Control-Access-Control value reflected in response!".format(colorize(valueh, 'warning')))
+                print("Access-Control-Allow-Origin' value reflected in response!".format(colorize(valueh, 'warning')))
                 dojoUpdate('Access-Control-Allow-Origin', dp, "evil.com", isAPI)
             elif headers.get('Access-Control-Allow-Origin') == "*":
-                print("Allow-Control-Access-Control too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
+                print("Access-Control-Allow-Origin' too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
                 dojoUpdate(bcolors.OKGREEN + 'Access-Control-Allow-Origin', dp, "*", isAPI)
             else:
                 print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is used properly... 1st Check OK!' + bcolors.ENDC)
@@ -848,10 +855,10 @@ Value: {})".format(
         parse_headers(response.getheaders())
         if 'Access-Control-Allow-Origin' in headers:
             if headers.get('Access-Control-Allow-Origin') == "null":
-                print("Allow-Control-Access-Control null value in response!".format(colorize(valueh, 'warning')))
+                print("Access-Control-Allow-Origin' null value in response!".format(colorize(valueh, 'warning')))
                 dojoUpdate('Access-Control-Allow-Origin', dp, "null", isAPI)
             elif headers.get('Access-Control-Allow-Origin') == "*":
-                print("Allow-Control-Access-Control too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
+                print("Access-Control-Allow-Origin' too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
                 dojoUpdate('Access-Control-Allow-Origin', dp, "*", isAPI)
             else:
                 print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is used properly... 2nd Check OK!' + bcolors.ENDC)
