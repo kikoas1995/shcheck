@@ -52,30 +52,32 @@ client_headers = {
 # Security headers that should be enabled
 sec_headers = {}
 def sec_headers_function(sec_headers):
-    if isAPI:
+    if isAPI == "False":
+        #print("FALSE")
         sec_headers = {
             #'X-XSS-Protection': 'warning',
-            'X-Frame-Options': 'warning',
-            'X-Content-Type-Options': 'warning',
-            'Strict-Transport-Security': 'error',
-            'Content-Security-Policy': 'warning',
-            'X-Permitted-Cross-Domain-Policies': 'warning',
-            'Referrer-Policy': 'warning',
-            'Feature-Policy': 'warning',
-            'Expect-CT': 'info',
+            'x-frame-options': 'warning',
+            'strict-transport-security': 'error',
+            'content-security-policy': 'warning',
+            'x-permitted-cross-domain-policies': 'warning',
+            'referrer-policy': 'warning',
+            'feature-policy': 'warning',
+            'expect-ct': 'info',
             #'Access-Control-Allow-Origin':'warning',
             #'Access-Control-Allow-Credentials':'warning',
         }
     else:
+        #print("TRUE")
         sec_headers = {
             #'X-XSS-Protection': 'warning',
-            'X-Frame-Options': 'warning',
-            'Strict-Transport-Security': 'error',
-            'Content-Security-Policy': 'warning',
-            'X-Permitted-Cross-Domain-Policies': 'warning',
-            'Referrer-Policy': 'warning',
-            'Feature-Policy': 'warning',
-            'Expect-CT': 'info',
+            'x-frame-options': 'warning',
+            'X-Content-Type-Options': 'warning',
+            'strict-transport-security': 'error',
+            'content-security-policy': 'warning',
+            'x-permitted-cross-domain-policies': 'warning',
+            'referrer-policy': 'warning',
+            'feature-policy': 'warning',
+            'expect-ct': 'info',
             #'Access-Control-Allow-Origin':'warning',
             #'Access-Control-Allow-Credentials':'warning',
         }
@@ -83,9 +85,9 @@ def sec_headers_function(sec_headers):
     return sec_headers
 
 value_headers =  {
-    'Access-Control-Allow-Origin',
-    'Access-Control-Allow-Credentials',
-    'Content-Type'
+    'access-control-allow-origin',
+    'access-control-allow-credentials',
+    'content-type'
 }
 
 information_headers = {
@@ -128,8 +130,8 @@ def dojoUpdate(safeh, dp, value, isAPI):
     product_id = None
 
     finding = {}
-
-    if 'X-Frame-Options' in safeh:
+    #print(safeh)
+    if 'x-frame-options' in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.7 - Anti-Clickjacking header'
             finding['description'] = """
             Clickjacking, also known as a "UI redress attack", is when an attacker uses multiple transparent or opaque layers to trick a user into clicking on a button or link on another page when they were intending to click on the top level page. Thus, the attacker is "hijacking" clicks meant for their page and routing them to another page, most likely owned by another application, domain, or both.
@@ -166,13 +168,13 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N
             """
-    elif "X-Permitted-Cross-Domain-Policies" in safeh:
+    elif "x-permitted-cross-domain-policies" in safeh:
         return
-    elif "Feature-Policy" in safeh:
+    elif "feature-policy" in safeh:
         return
-    elif "Expect-CT" in safeh:
+    elif "expect-ct" in safeh:
         return
-    elif "Referrer-Policy" in safeh:
+    elif "referrer-policy" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.6 - Referrer-policy header'
             finding['description'] = """
             Requests made from a document, and for navigations away from that document are associated with a Referer header. While the header can be suppressed for links with the ```noreferrer link``` type, authors might wish to control the Referer header more directly for a number of reasons:
@@ -226,7 +228,7 @@ def dojoUpdate(safeh, dp, value, isAPI):
             """
             finding['cwe'] = 116
             finding['severity_justification'] = ""
-    elif "charset" in safeh:
+    elif "content-type" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.1 - Unsafe Content-Type header within the response'
             finding['description'] = """
             Setting the right content headers is important for hardening your applications security, this reduces exposure to driveby download attacks or sites serving user uploaded content that, by clever naming could be treated by MS Internet Explorer as executable or dynamic HTML files and thus can lead to security vulnerabilities.
@@ -255,7 +257,7 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N
             """
-    elif "Strict-Transport" in safeh:
+    elif "strict-transport" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.5 - HTTP Strict Transport Security (HSTS)'
             finding['description'] = """
             HTTP Strict Transport Security (HSTS) is an opt-in security enhancement that is specified by a web application through the use of a special response header. Once a supported browser receives this header that browser will prevent any communications from being sent over HTTP to the specified domain and will instead send all communications over HTTPS. It also prevents HTTPS click through prompts on browsers.
@@ -290,7 +292,7 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N
             """
-    elif "X-Content-Type" in safeh:
+    elif "x-content-type-options" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.4 - API responses security headers'
             finding['description'] = """
             There are some security headers which should be properly configured in order to protect some API callbacks against Reflective File Download and other type of injections.
@@ -329,7 +331,7 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
             """
-    elif "Content-Security-Policy" in safeh:
+    elif "content-security-policy" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.4.3 - Content Security Policy (CSP) header'
             finding['description'] = """
             The main use of the content security policy header is to, detect, report, and reject XSS attacks. The core issue in relation to XSS attacks is the browser's inability to distinguish between a script that's intended to be part of your application, and a script that's been maliciously injected by a thirdparty.
@@ -380,7 +382,7 @@ def dojoUpdate(safeh, dp, value, isAPI):
 
             - AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N
             """
-    elif "Access-Control-Allow-Origin" or "Access-Control-Allow-Credentials" in safeh:
+    elif "access-control-allow-origin" or "access-control-allow-credentials" in safeh:
             finding['title'] = 'ASVS v4.0 - 14.5.3 - Cross-Origin Resource Sharing (CORS)'
             finding['description'] = """
             Cross Origin Resource Sharing or ```CORS``` is a mechanism that enables a web browser to perform cross-domain requests using the XMLHttpRequest L2 API in a controlled manner.
@@ -735,35 +737,41 @@ def main(options, targets):
         sec_headers_2 = sec_headers_function(sec_headers)
 
         #print(sec_headers_2)
-        for safeh in sec_headers_2:
-            if safeh in headers:
+        headers_lowercase = {k.lower(): v for k, v in headers.items()}
+        for safeh in sec_headers_2:    
+            if safeh in headers_lowercase:
                 safe += 1
-                json_headers["present"][safeh] = headers.get(safeh)
+                json_headers["present"][safeh] = headers_lowercase.get(safeh)
+                #print(safeh)
+                #print(json_headers)
 
                 # Taking care of special headers that could have bad values
 
                 # X-XSS-Protection Should be enabled
-                if safeh == 'X-XSS-Protection' and headers.get(safeh) == '0':
+                if safeh == 'x-xss-protection' and headers_lowercase.get(safeh) == '0':
                     print("[*] Header {} is present! (Value: {})".format(
                             colorize(safeh, 'ok'),
-                            colorize(headers.get(safeh), 'warning')))
+                            colorize(headers_lowercase.get(safeh), 'warning')))
 
                 # Printing generic message if not specified above
                 else:
                     print("[*] Header {} is present! (Value: {})".format(
                             colorize(safeh, 'ok'),
-                            headers.get(safeh)))
+                            headers_lowercase.get(safeh)))
             else:
+                #print(safeh)
+                #print(json_headers)
                 unsafe += 1
                 json_headers["missing"].append(safeh)
                 # HSTS works obviously only on HTTPS
-                if safeh == 'Strict-Transport-Security' and not is_https(rUrl):
+                if safeh == 'strict-transport-security' and not is_https(rUrl):
                     unsafe -= 1
                     json_headers["missing"].remove(safeh)
                     continue
 
-                print('[!] Missing security header: {}'.format(
-                    colorize(safeh, sec_headers_2.get(safeh))))
+                print("[!] Missing security header: {}".format(
+                    colorize(safeh, 'warning'), 
+                    headers_lowercase.get(safeh)))
 
                 dojoUpdate(safeh, dp, "", isAPI)
 
@@ -772,13 +780,13 @@ def main(options, targets):
             i_chk = False
             print()
             for infoh in information_headers:
-                if infoh in headers:
-                    json_headers["information_disclosure"][infoh] = headers.get(infoh)
+                if infoh in headers_lowercase:
+                    json_headers["information_disclosure"][infoh] = headers_lowercase.get(infoh)
                     i_chk = True
                     print("[!] Possible information disclosure: \
 header {} is present! (Value: {})".format(
                             colorize(infoh, 'warning'),
-                            headers.get(infoh)))
+                            headers_lowercase.get(infoh)))
             if not i_chk:
                 print("[*] No information disclosure headers detected")
         
@@ -788,13 +796,13 @@ header {} is present! (Value: {})".format(
             c_chk = False
             print()
             for cacheh in cache_headers:
-                if cacheh in headers:
-                    json_headers["caching"][cacheh] = headers.get(cacheh)
+                if cacheh in headers_lowercase:
+                    json_headers["caching"][cacheh] = headers_lowercase.get(cacheh)
                     c_chk = True
                     print("[!] Cache control header {} is present! \
 Value: {})".format(
                             colorize(cacheh, 'info'),
-                            headers.get(cacheh)))
+                            headers_lowercase.get(cacheh)))
             if not c_chk:
                 print("[*] No caching headers detected")
 
@@ -810,30 +818,32 @@ Value: {})".format(
         json_headers["value_disclosure"] = {}
         v_chk = False
         print()
+        #print(value_headers)
         for valueh in value_headers:
-            if valueh in headers:
-                json_headers["value_disclosure"][valueh] = headers.get(valueh)
-                print(bcolors.OKBLUE + "Checking if the Access-Control-Allow-Credentials response header is included..." + bcolors.ENDC)
-                if valueh == 'Access-Control-Allow-Credentials':
+            #print(value_headers)
+            if valueh in headers_lowercase:
+                json_headers["value_disclosure"][valueh] = headers_lowercase.get(valueh)
+                #print(valueh)
+                if valueh == 'access-control-allow-credentials':
                     print(bcolors.OKBLUE + "Access-Control-Allow-Credentials response header is included. Checking the value..." + bcolors.ENDC)
-                    if json_headers["value_disclosure"][valueh] == "true":
+                    if json_headers["value_disclosure"][valueh] == "true" or json_headers["value_disclosure"][valueh] == "True":
                         print("Access-Control-Allow-Credentials is set to true!".format(colorize(valueh, 'warning')))
-                        dojoUpdate('Access-Control-Allow-Credentials', dp, "true", isAPI)
+                        dojoUpdate('access-control-allow-credentials', dp, "true", isAPI)
                     else:
                         print(bcolors.OKGREEN + 'Access-Control-Allow-Credentials response header is used properly... OK!'+ bcolors.ENDC)
-                else:
-                    print(bcolors.OKGREEN + 'The Access-Control-Allow-Credentials response header is not included... OK!'+ bcolors.ENDC)
 
-                print(bcolors.OKBLUE + "Checking the Content-type and Charset..." + bcolors.ENDC)
                 #print(valueh) --> "Content-Type"
                 #print(json_headers["value_disclosure"][valueh]) --> text/html; charset=utf-8
-                if valueh == 'Content-Type':
+                if valueh == 'content-type':
                     if 'charset=' in (json_headers["value_disclosure"][valueh]):
-                        if json_headers["value_disclosure"][valueh] not in {"text/html; charset=utf-8", "text/html; charset=iso-8859-1", "text/html; charset=UTF-8"}:
+                        if json_headers["value_disclosure"][valueh] not in {"text/html; charset=utf-8", "text/html; charset=iso-8859-1", "text/html; charset=UTF-8","text/html; charset=windows-1252", "text/html;charset=UTF-8", "text/html;charset=ISO-8859-1"}:
                             print("Unknown charset in Content-type!".format(colorize(valueh, 'warning')))
+                            #print(json_headers["value_disclosure"][valueh])
                             dojoUpdate(valueh, dp, json_headers["value_disclosure"][valueh], isAPI)
                         else:
                             print(bcolors.OKGREEN + 'Known Charset in Content-type... OK! ' + bcolors.ENDC + "(Value: {}: {})".format(colorize(valueh, 'ok'),colorize(json_headers["value_disclosure"][valueh], 'ok')))
+                    else:
+                        print(bcolors.OKGREEN + 'Content-Type set correctly '+ bcolors.ENDC +"(Value: {}: {})".format(colorize(valueh, 'ok'),colorize(json_headers["value_disclosure"][valueh], 'ok')))       
                 v_chk = True
         
         client_headers.update({'Origin': 'evil.com'})
@@ -841,31 +851,24 @@ Value: {})".format(
         rUrl = response.geturl()
         parse_headers(response.getheaders())
 
-        print(bcolors.OKBLUE + "Checking if the Access-Control-Allow-Origin response header is included and well configured..." + bcolors.ENDC)
-        if 'Access-Control-Allow-Origin' in headers:
-            if headers.get('Access-Control-Allow-Origin') == "evil.com":
+        if 'access-control-allow-origin' in headers_lowercase:
+            if headers_lowercase.get('access-control-allow-origin') == "evil.com":
                 print("Access-Control-Allow-Origin value reflected in response!".format(colorize(valueh, 'warning')))
-                dojoUpdate('Access-Control-Allow-Origin', dp, "evil.com", isAPI)
-            elif headers.get('Access-Control-Allow-Origin') == "*":
+                dojoUpdate('access-control-allow-origin', dp, "evil.com", isAPI)
+            elif headers_lowercase.get('access-control-allow-origin') == "*":
                 print("Access-Control-Allow-Origin too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning'))) 
-                dojoUpdate('Access-Control-Allow-Origin', dp, "*", isAPI)
-            else:
-                print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is used properly... 1st Check OK!' + bcolors.ENDC)
+                dojoUpdate('access-control-allow-origin', dp, "*", isAPI)
+
         client_headers.update({'Origin': 'null'})
         response = check_target(target, options)
         rUrl = response.geturl()
         parse_headers(response.getheaders())
-        if 'Access-Control-Allow-Origin' in headers:
-            if headers.get('Access-Control-Allow-Origin') == "null":
+        if 'access-control-allow-origin' in headers_lowercase:
+            if headers_lowercase.get('access-control-allow-origin') == "null" or headers_lowercase.get('access-control-allow-origin') == "(null)":
                 print("Access-Control-Allow-Origin null value in response!".format(colorize(valueh, 'warning')))
-                dojoUpdate('Access-Control-Allow-Origin', dp, "null", isAPI)
-            elif headers.get('Access-Control-Allow-Origin') == "*":
-                print("Access-Control-Allow-Origin too weak (use of wildcard '*') in response!".format(colorize(valueh, 'warning')))
-                dojoUpdate('Access-Control-Allow-Origin', dp, "*", isAPI)
-            else:
-                print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is used properly... 2nd Check OK!' + bcolors.ENDC)
-        else:
-            print(bcolors.OKGREEN + 'The Access-Control-Allow-Origin response header is not included... OK!'+ bcolors.ENDC )
+                dojoUpdate('access-control-allow-origin', dp, "null", isAPI)
+            
+
         if not v_chk:
             print("[*] No  value headers detected")
         ## ENDED
